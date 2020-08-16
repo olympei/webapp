@@ -1,0 +1,91 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Interview Homework
+Parameters:
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+  SSHKeyPair:
+      Description: SSH Key Pair for Bastion and App Instances
+      Type: AWS::EC2::KeyPair::KeyName
+Resources:
+  NewVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      Size: 1
+      AvailabilityZone: !GetAtt Webapp.AvailabilityZone
+      Tags:
+        - Key: Name
+          Value: WebappEbs
+    DeletionPolicy: Snapshot
+
+  MountPoint:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      InstanceId: !Ref Webapp
+      VolumeId: !Ref NewVolume
+      Device: /dev/sdh
+  Webapp:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: 
+        Ref: SSHKeyPair
+      ImageId: 
+        Ref: LatestAmiId
+      InstanceType: t2.micro
+      NetworkInterfaces:
+      - GroupSet: 
+        - Fn::ImportValue: "WebappSG" 
+        AssociatePublicIpAddress: "true"
+        DeviceIndex: "0"
+        SubnetId: 
+          Fn::ImportValue: "publicsubA"
+      UserData: 
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash -xe
+            # Get the latest CloudFormation package
+            yum update -y aws-cfn-bootstrap
+            # Start cfn-init
+            /opt/aws/bin/cfn-init -s ${AWS::StackId} -r Webapp --region ${AWS::Region}
+            # Start cfn-signal to the wait condition
+            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource SampleWaitCondition --region ${AWS::Region}
+      Tags:
+        - Key: Name
+          Value: Webapp
+    Metadata:
+      Comment: Install a simple Apache HTTP page
+      AWS::CloudFormation::Init:
+        config:
+          commands:
+            hello:
+              command: "echo 'hello world'"
+          packages:
+            yum:
+              httpd: []
+          files:
+            "/var/www/html/index.html":
+              content: |
+                <h1>Hello AWS World</h1>
+              mode: '000644' 
+          services:
+            sysvinit:
+              httpd:
+                enabled: 'true'
+                ensureRunning: 'true'
+
+  SampleWaitCondition:
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT2M
+        Count: 1
+    Type: AWS::CloudFormation::WaitCondition
+Outputs:
+  URL:
+    Description: URL of the sample website
+    Value:
+      Fn::Join:
+      - ''
+      - - http://
+        - Fn::GetAtt:
+          - Webapp
+          - PublicDnsName

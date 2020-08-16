@@ -1,0 +1,452 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Interview Homework
+Resources: 
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: VPC1
+  subnetpublicA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: 
+        Fn::Select:
+          - 0
+          - Fn::GetAZs: ""
+      VpcId: 
+        Ref: VPC
+      CidrBlock: 10.0.1.0/24
+      Tags:
+        - Key: Name
+          Value: subnet-public-A
+  subnetpublicB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: 
+        Fn::Select:
+          - 1
+          - Fn::GetAZs: ""
+      VpcId: 
+        Ref: VPC
+      CidrBlock: 10.0.2.0/24
+      Tags:
+        - Key: Name
+          Value: subnet-public-B
+  subnetpublicC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: 
+        Fn::Select:
+          - 2
+          - Fn::GetAZs: ""
+      VpcId: 
+        Ref: VPC
+      CidrBlock: 10.0.3.0/24
+      Tags:
+        - Key: Name
+          Value: subnet-public-C
+  subnetappA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: 
+        Fn::Select:
+          - 0
+          - Fn::GetAZs: ""
+      VpcId: 
+        Ref: VPC
+      CidrBlock: 10.0.11.0/24
+      Tags:
+        - Key: Name
+          Value: subnet-app-A
+  subnetappB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: 
+        Fn::Select:
+          - 1
+          - Fn::GetAZs: ""
+      VpcId: 
+        Ref: VPC
+      CidrBlock: 10.0.12.0/24
+      Tags:
+        - Key: Name
+          Value: subnet-app-B
+  subnetappC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: 
+        Fn::Select:
+          - 2
+          - Fn::GetAZs: ""
+      VpcId: 
+        Ref: VPC
+      CidrBlock: 10.0.13.0/24
+      Tags:
+        - Key: Name
+          Value: subnet-app-C
+  subnetdbA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: 
+        Fn::Select:
+          - 0
+          - Fn::GetAZs: ""
+      VpcId: 
+        Ref: VPC
+      CidrBlock: 10.0.21.0/24
+      Tags:
+        - Key: Name
+          Value: subnet-db-A
+  subnetdbB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: 
+        Fn::Select:
+          - 1
+          - Fn::GetAZs: ""
+      VpcId: 
+        Ref: VPC
+      CidrBlock: 10.0.22.0/24
+      Tags:
+        - Key: Name
+          Value: subnet-db-B
+  subnetdbC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: 
+        Fn::Select:
+          - 2
+          - Fn::GetAZs: ""
+      VpcId: 
+        Ref: VPC
+      CidrBlock: 10.0.23.0/24
+      Tags:
+        - Key: Name
+          Value: subnet-db-C
+  InternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties:
+      Tags:
+      - Key: Name
+        Value: vpc1-igw
+  InternetGatewayAttachment:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId:
+        Ref: VPC
+      InternetGatewayId:
+        Ref: InternetGateway
+  RouteTablePublic: 
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: rt-public
+  RouteTablePrivateA: 
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: rt-private-A
+  RouteTablePrivateB: 
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: rt-private-B
+  RouteTablePrivateC: 
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: rt-private-C
+  RouteTableAssociationPublicA:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId:
+        Ref: subnetpublicA
+      RouteTableId:
+        Ref: RouteTablePublic
+  RouteTableAssociationPublicB:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId:
+        Ref: subnetpublicB
+      RouteTableId:
+        Ref: RouteTablePublic
+  RouteTableAssociationPublicC:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId:
+        Ref: subnetpublicC
+      RouteTableId:
+        Ref: RouteTablePublic
+  RouteTableAssociationAppA:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId:
+        Ref: subnetappA
+      RouteTableId:
+        Ref: RouteTablePrivateA
+  RouteTableAssociationAppB:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId:
+        Ref: subnetappB
+      RouteTableId:
+        Ref: RouteTablePrivateB
+  RouteTableAssociationAppC:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId:
+        Ref: subnetappC
+      RouteTableId:
+        Ref: RouteTablePrivateC
+  RouteTableAssociationDBA:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId:
+        Ref: subnetdbA
+      RouteTableId:
+        Ref: RouteTablePrivateA
+  RouteTableAssociationDBB:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId:
+        Ref: subnetdbB
+      RouteTableId:
+        Ref: RouteTablePrivateB
+  RouteTableAssociationDBC:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId:
+        Ref: subnetdbC
+      RouteTableId:
+        Ref: RouteTablePrivateC
+  RouteTablePublicInternetRoute: 
+    Type: 'AWS::EC2::Route'
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId:
+        Ref: RouteTablePublic
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId:
+        Ref: InternetGateway
+  NetworkAclPublic:
+    Type: 'AWS::EC2::NetworkAcl'
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: nacl-public
+  NetworkAclPrivate:
+    Type: 'AWS::EC2::NetworkAcl'
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: nacl-private
+  SubnetNetworkAclAssociationPublicA:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      SubnetId:
+        Ref: subnetpublicA
+      NetworkAclId:
+        Ref: NetworkAclPublic
+  SubnetNetworkAclAssociationPublicB:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      SubnetId:
+        Ref: subnetpublicB
+      NetworkAclId:
+        Ref: NetworkAclPublic
+  SubnetNetworkAclAssociationPublicC:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      SubnetId:
+        Ref: subnetpublicC
+      NetworkAclId:
+        Ref: NetworkAclPublic
+  SubnetNetworkAclAssociationAppA:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      SubnetId:
+        Ref: subnetappA
+      NetworkAclId:
+        Ref: NetworkAclPrivate
+  SubnetNetworkAclAssociationAppB:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      SubnetId:
+        Ref: subnetappB
+      NetworkAclId:
+        Ref: NetworkAclPrivate
+  SubnetNetworkAclAssociationAppC:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      SubnetId:
+        Ref: subnetappC
+      NetworkAclId:
+        Ref: NetworkAclPrivate
+  SubnetNetworkAclAssociationDBA:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      SubnetId:
+        Ref: subnetdbA
+      NetworkAclId:
+        Ref: NetworkAclPrivate
+  SubnetNetworkAclAssociationDBB:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      SubnetId:
+        Ref: subnetdbB
+      NetworkAclId:
+        Ref: NetworkAclPrivate
+  SubnetNetworkAclAssociationDBB:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      SubnetId:
+        Ref: subnetdbC
+      NetworkAclId:
+        Ref: NetworkAclPrivate
+  NetworkAclEntryInPublicAllowAll:
+    Type: 'AWS::EC2::NetworkAclEntry'
+    Properties:
+      NetworkAclId:
+        Ref: NetworkAclPublic
+      RuleNumber: 99
+      Protocol: -1
+      RuleAction: allow
+      Egress: false
+      CidrBlock: '0.0.0.0/0'
+  NetworkAclEntryOutPublicAllowAll:
+    Type: 'AWS::EC2::NetworkAclEntry'
+    Properties:
+      NetworkAclId:
+        Ref: NetworkAclPublic
+      RuleNumber: 99
+      Protocol: -1
+      RuleAction: allow
+      Egress: true
+      CidrBlock: '0.0.0.0/0'
+  NetworkAclEntryInPrivateAllowVPC:
+    Type: 'AWS::EC2::NetworkAclEntry'
+    Properties:
+      NetworkAclId:
+        Ref: NetworkAclPrivate
+      RuleNumber: 99
+      Protocol: -1
+      RuleAction: allow
+      Egress: false
+      CidrBlock: '0.0.0.0/0'
+  NetworkAclEntryOutPrivateAllowVPC:
+    Type: 'AWS::EC2::NetworkAclEntry'
+    Properties:
+      NetworkAclId:
+        Ref: NetworkAclPrivate
+      RuleNumber: 99
+      Protocol: -1
+      RuleAction: allow
+      Egress: true
+      CidrBlock: '0.0.0.0/0'
+  EIPWebapp:
+    Type: 'AWS::EC2::EIP'
+    Properties:
+      Domain: vpc
+  WebappSG:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: WebappSG
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: '0.0.0.0/0'
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: '0.0.0.0/0'
+      VpcId:
+        Ref: VPC
+  AssociateWebPort:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      AllocationId: !GetAtt EIPWebapp.AllocationId
+      NetworkInterfaceId: !Ref controlXface
+  controlXface:
+    Type: AWS::EC2::NetworkInterface
+    Properties:
+      SubnetId: !Ref subnetpublicA
+      Description: Interface for controlling traffic
+      GroupSet: 
+      - !Ref WebappSG
+      SourceDestCheck: true
+      Tags:
+      - Key: Network
+        Value: Web
+  
+
+  InstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Roles:
+      - !Ref IAMRole
+  IAMRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: 'ec2.amazonaws.com'
+          Action: 'sts:AssumeRole'
+      Policies:
+      - PolicyName: 's3'
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - 's3:*'
+            Resource:
+            - '*'
+Outputs:  
+  PublicSubnet1:
+    Description: "Subnet ID of public subnet in AZ1"
+    Value: !Ref subnetpublicA
+    Export: 
+      Name: publicsubA
+  WebappSG:
+    Description: "Web Server Security Group ID"
+    Value: !Ref WebappSG
+    Export: 
+      Name: WebappSG 
+  controlXface:
+    Description: "Web control interface"
+    Value: !Ref controlXface
+    Export: 
+      Name: WebXface
+  
+  WebIAMProfile:
+    Description: "Instance Profile of IAM Role that needs to be attached to EC2 instance"
+    Value:
+      Fn::GetAtt: [ InstanceProfile, Arn ]
+    Export: 
+      Name: WebIAMProfile
+
